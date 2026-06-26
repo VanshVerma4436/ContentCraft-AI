@@ -6,7 +6,7 @@
 import axios from 'axios';
 
 // Base URL for the FastAPI backend
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://contentcraft-ai-2-m5o6.onrender.com';
 
 // Create Axios instance with default config
 const apiClient = axios.create({
