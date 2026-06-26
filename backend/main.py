@@ -1,6 +1,6 @@
 """
 ContentCraft AI - FastAPI Backend
-Integrates with Google Gemini API for AI-powered content generation.
+Integrates with OpenRouter API for AI-powered content generation.
 """
 
 import os
@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import google.generativeai as genai
+import httpx
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,7 +16,7 @@ load_dotenv()
 # Initialize FastAPI application
 app = FastAPI(
     title="ContentCraft AI",
-    description="AI-powered content generation API using Google Gemini",
+    description="AI-powered content generation API using OpenRouter",
     version="1.0.0"
 )
 
@@ -29,14 +29,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure Gemini API key
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+# Configure OpenRouter API key
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.2-3b-instruct:free")
 
-if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
-    print(f"✅ Gemini API key loaded successfully.")
+if OPENROUTER_API_KEY:
+    print(f"✅ OpenRouter API key loaded successfully.")
 else:
-    print("⚠️  WARNING: GOOGLE_API_KEY not found in environment variables.")
+    print("⚠️  WARNING: OPENROUTER_API_KEY not found in environment variables.")
 
 
 # ─────────────────────────────────────────────
@@ -62,7 +62,7 @@ class ContentResponse(BaseModel):
 
 def build_prompt(content_type: str, topic: str, tone: str, length: str) -> str:
     """
-    Constructs a detailed prompt for Gemini based on user inputs.
+    Constructs a detailed prompt for OpenRouter based on user inputs.
     """
     length_guide = {
         "Short": "Keep it concise, around 150-250 words.",
@@ -115,7 +115,7 @@ async def root():
 @app.post("/generate", response_model=ContentResponse, summary="Generate Content")
 async def generate_content(request: ContentRequest):
     """
-    Generate AI-powered content using Google Gemini.
+    Generate AI-powered content using OpenRouter.
 
     - **content_type**: Type of content to generate (Blog Post, LinkedIn Post, etc.)
     - **topic**: The subject or topic to write about
@@ -124,10 +124,10 @@ async def generate_content(request: ContentRequest):
     """
 
     # Validate API key is configured
-    if not GOOGLE_API_KEY:
+    if not OPENROUTER_API_KEY:
         raise HTTPException(
             status_code=500,
-            detail="Google API key is not configured. Please set GOOGLE_API_KEY in the .env file."
+            detail="OpenRouter API key is not configured. Please set OPENROUTER_API_KEY in the .env file."
         )
 
     # Validate required fields
@@ -137,10 +137,23 @@ async def generate_content(request: ContentRequest):
     if not request.content_type.strip():
         raise HTTPException(status_code=400, detail="Content type must be specified.")
 
-    try:
-        # Initialize Gemini model
-        model = genai.GenerativeModel("gemini-2.5-flash")
+    # Fallback models list for robust generation
+    fallback_models = [
+        OPENROUTER_MODEL,
+        "meta-llama/llama-3.2-3b-instruct:free",
+        "google/gemma-4-26b-a4b-it:free",
+        "google/gemma-4-31b-it:free",
+        "nousresearch/hermes-3-llama-3.1-405b:free",
+        "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+        "cohere/north-mini-code:free"
+    ]
+    # Remove duplicates while preserving order
+    models_to_try = []
+    for m in fallback_models:
+        if m and m not in models_to_try:
+            models_to_try.append(m)
 
+    try:
         # Build the prompt
         prompt = build_prompt(
             content_type=request.content_type,
@@ -149,45 +162,78 @@ async def generate_content(request: ContentRequest):
             length=request.length
         )
 
-        # Generate content using Gemini
-        response = model.generate_content(prompt)
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:5173",
+            "X-Title": "ContentCraft AI"
+        }
 
-        # Extract generated text
-        generated_text = response.text
+        last_error_msg = "Unknown error"
 
-        if not generated_text:
-            raise HTTPException(status_code=500, detail="Gemini returned an empty response.")
+        async with httpx.AsyncClient() as client:
+            for current_model in models_to_try:
+                payload = {
+                    "model": current_model,
+                    "max_tokens": 2000,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ]
+                }
 
-        return ContentResponse(content=generated_text)
+                try:
+                    response = await client.post(
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers=headers,
+                        json=payload,
+                        timeout=60.0
+                    )
+                    response.raise_for_status()
+                    response_data = response.json()
 
-    except genai.types.BlockedPromptException:
-        raise HTTPException(
-            status_code=400,
-            detail="The prompt was blocked by Gemini's safety filters. Please modify your topic."
-        )
-    except Exception as e:
-        error_message = str(e)
-        if "API_KEY_INVALID" in error_message or "INVALID_ARGUMENT" in error_message:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid Google API key. Get a valid key at https://aistudio.google.com/app/apikey"
-            )
-        if "PERMISSION_DENIED" in error_message or "403" in error_message:
-            raise HTTPException(
-                status_code=403,
-                detail="Permission denied. Your API key may not have Gemini API access enabled."
-            )
-        if "RESOURCE_EXHAUSTED" in error_message or "429" in error_message:
-            raise HTTPException(
-                status_code=429,
-                detail="Rate limit exceeded. Please wait a moment and try again."
-            )
-        if "404" in error_message or "not found" in error_message.lower():
-            raise HTTPException(
-                status_code=404,
-                detail="Gemini model not found. The model 'gemini-2.0-flash' may not be available in your region."
-            )
+                    if "error" in response_data:
+                        last_error_msg = response_data["error"].get("message", "Unknown OpenRouter error")
+                        print(f"⚠️ Model {current_model} failed: {last_error_msg}")
+                        continue
+
+                    choices = response_data.get("choices", [])
+                    if not choices:
+                        continue
+
+                    generated_text = choices[0].get("message", {}).get("content", "")
+
+                    if generated_text:
+                        return ContentResponse(content=generated_text)
+
+                except httpx.HTTPStatusError as e:
+                    error_msg = str(e)
+                    try:
+                        res_json = e.response.json()
+                        if "error" in res_json:
+                            error_msg = res_json["error"].get("message", error_msg)
+                    except Exception:
+                        pass
+                    last_error_msg = error_msg
+                    print(f"⚠️ Model {current_model} HTTP error: {error_msg}")
+                    continue
+                except Exception as e:
+                    last_error_msg = str(e)
+                    print(f"⚠️ Model {current_model} exception: {str(e)}")
+                    continue
+
+        # If we exit the loop, all models failed
         raise HTTPException(
             status_code=500,
-            detail=f"Content generation failed: {error_message}"
+            detail=f"All fallback models failed. Last error: {last_error_msg}"
+        )
+
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=500,
+            detail=f"Content generation failed: {str(e)}"
         )

@@ -75,7 +75,7 @@ const Hero: React.FC = () => {
         <div className="flex justify-center mb-6 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-brand-500/30 text-sm text-brand-300 font-medium">
             <RiSparklingFill className="text-brand-400 animate-pulse" />
-            Powered by Google Gemini AI
+            Powered by OpenRouter AI
             <RiSparklingFill className="text-accent-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
           </div>
         </div>
@@ -93,7 +93,7 @@ const Hero: React.FC = () => {
           className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up"
           style={{ animationDelay: '0.1s' }}
         >
-          ContentCraft AI harnesses the power of Google Gemini to generate professional
+          ContentCraft AI harnesses the power of OpenRouter to generate professional
           blog posts, social media captions, marketing copy, and more — tailored to your
           exact tone and style.
         </p>

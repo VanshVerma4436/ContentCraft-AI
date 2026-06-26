@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
               <span className="gradient-text">ContentCraft</span> AI
             </h3>
             <p className="text-slate-500 text-sm max-w-sm leading-relaxed">
-              Harness the power of Google Gemini to create professional content
+              Harness the power of OpenRouter to create professional content
               for every platform in seconds.
             </p>
           </div>
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
               <span>+</span>
               <span className="text-emerald-400 font-medium">FastAPI</span>
               <span>+</span>
-              <span className="text-purple-400 font-medium">Gemini AI</span>
+              <span className="text-purple-400 font-medium">OpenRouter AI</span>
             </div>
 
             <a

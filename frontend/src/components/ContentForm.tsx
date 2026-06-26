@@ -47,6 +47,8 @@ const LENGTHS: { value: Length; words: string; desc: string }[] = [
   { value: 'Long',   words: '800–1200', desc: 'Comprehensive' },
 ];
 
+
+
 // ─────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────
@@ -134,7 +136,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated, onContent
             Generate Your <span className="gradient-text">Content</span>
           </h2>
           <p className="text-slate-400 text-base max-w-xl mx-auto">
-            Fill in the details below and let Gemini AI craft your perfect piece.
+            Fill in the details below and let OpenRouter AI craft your perfect piece.
           </p>
         </div>
 
@@ -205,7 +207,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated, onContent
           </div>
 
           {/* ── Step 3: Tone & Length ── */}
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             {/* Tone */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">
@@ -289,6 +291,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated, onContent
                 )}
               </div>
             </div>
+
           </div>
 
           {/* ── Error Display ── */}
@@ -311,7 +314,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated, onContent
             {isLoading ? (
               <>
                 <RiLoader4Fill className="text-xl animate-spin" />
-                <span>Crafting your content with Gemini AI...</span>
+                <span>Crafting your content with OpenRouter...</span>
               </>
             ) : (
               <>

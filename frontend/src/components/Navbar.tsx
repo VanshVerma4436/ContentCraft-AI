@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center gap-3">
             <span className="hidden sm:flex badge badge-blue text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-              Gemini Powered
+              OpenRouter Powered
             </span>
             <span className="badge badge-purple text-xs hidden md:flex">
               v1.0.0

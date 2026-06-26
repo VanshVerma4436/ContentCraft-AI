@@ -1,6 +1,6 @@
 # ContentCraft AI
 
-> AI-powered content generation platform built with **React + FastAPI + Google Gemini AI**
+> AI-powered content generation platform built with **React + FastAPI + OpenRouter AI**
 
 ---
 
@@ -20,8 +20,9 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 
 # Configure your API key
-# Open .env and replace with your actual Google API key
-# GOOGLE_API_KEY=your_actual_key_here
+# Open .env and replace with your actual OpenRouter API key
+# OPENROUTER_API_KEY=your_actual_key_here
+# OPENROUTER_MODEL=google/gemini-2.5-flash
 
 # Start the FastAPI server
 uvicorn main:app --reload --port 8000
@@ -48,14 +49,15 @@ Frontend runs at: **http://localhost:5173**
 
 ---
 
-## 🔑 Getting Your Google API Key
+## 🔑 Getting Your OpenRouter API Key
 
-1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click **"Create API Key"**
+1. Visit [OpenRouter API Keys](https://openrouter.ai/keys)
+2. Sign in or create an account
+3. Click **"Create Key"**
 4. Copy the key and paste it into `backend/.env`:
    ```
-   GOOGLE_API_KEY=your_key_here
+   OPENROUTER_API_KEY=your_key_here
+   OPENROUTER_MODEL=google/gemini-2.5-flash
    ```
 
 ---
@@ -69,7 +71,7 @@ Frontend runs at: **http://localhost:5173**
 | HTTP      | Axios               |
 | Icons     | React Icons         |
 | Backend   | FastAPI (Python)    |
-| AI Model  | Google Gemini Flash |
+| AI Model  | OpenRouter (Gemini, Llama, DeepSeek, etc.) |
 | Env Vars  | python-dotenv       |
 
 ---
@@ -79,7 +81,7 @@ Frontend runs at: **http://localhost:5173**
 ```
 AI_Content_Generation/
 ├── backend/
-│   ├── main.py           # FastAPI app + Gemini integration
+│   ├── main.py           # FastAPI app + OpenRouter integration
 │   ├── requirements.txt  # Python dependencies
 │   ├── .env              # API key (DO NOT COMMIT)
 │   └── README.md
@@ -114,7 +116,7 @@ AI_Content_Generation/
 - **3 Lengths**: Short, Medium, Long
 - **Copy & Download**: One-click copy to clipboard, download as TXT
 - **History**: Browser localStorage history with view/reuse/delete
-- **Responsive**: Mobile-first, works on all screen sizes
+- **Responsive**: Mobile-first, works on all size sizes
 - **Dark SaaS UI**: Glassmorphism, gradients, smooth animations
 
 ---
@@ -132,5 +134,5 @@ AI_Content_Generation/
 ## ⚠️ Notes
 
 - Keep your `GOOGLE_API_KEY` secret — never commit `.env` to git
-- The free tier of Gemini Flash has rate limits; be mindful of rapid generation
+- Be mindful of rate limits or token credits on your OpenRouter account
 - History is stored in browser localStorage (client-side only)
